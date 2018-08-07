@@ -56,6 +56,7 @@ static int recv_data(int);
 static int get_string_from_buf(char*);
 static int get_num_from_buf(void);
 static int buf_shift(void);
+static void buf_step(void);
 static void flush_buffer(void);
 static void parse_command(void);
 static int send_songs_in_dir(void);
@@ -161,7 +162,6 @@ int create_new_socket()
 	FD_SET(mysock, &socks);
 	return mysock;
 }
-
 void setnonblocking(int *sock)
 {
 	int opts;
@@ -173,7 +173,6 @@ void setnonblocking(int *sock)
 		error("fnctl F_SETFL");
 	return;
 }
-
 int recv_data(int sock)
 {
 	ssize_t bytes = -1;
@@ -276,6 +275,11 @@ int buf_shift()
 	}
 	return (data_buf_len - bytes_parsed);
 }
+void buf_step()
+{
+	pbuf++;
+	bytes_parsed++;
+}
 void flush_buffer()
 {
 	memset(&data_buf[0], 0, BUFF_SIZE);
@@ -291,68 +295,68 @@ void parse_command()
 		printf("parse wait\n");//wait if there aren't at least two chars to parse
 	else if (*pbuf == 'P')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		if (*pbuf == 'L')
 			net_play();
 		else if (*pbuf == 'S')
 		{
-			pbuf++; bytes_parsed++;
+			buf_step();
 			stop();
 			buf_shift();
 		}
 		else if (*pbuf == 'N')
 		{
 			next();
-			pbuf++; bytes_parsed++;
+			buf_step();
 			buf_shift();
 		}
 		else if (*pbuf == 'A')
 		{
 			pausetoggle();
-			pbuf++; bytes_parsed++;
+			buf_step();
 			buf_shift();
 		}
 		else if (*pbuf == 'B')
 		{
 			back();
-			pbuf++; bytes_parsed++;
+			buf_step();
 			buf_shift();
 		}
 		else if (*pbuf == 'G')//generate new playlist and skip to next song
 		{
 			clear_playnow_lists();
 			next();
-			pbuf++; bytes_parsed++;
+			buf_step();
 			buf_shift();
 		}
 		else if (*pbuf == 'F')//play new list now
 		{
-			pbuf++; bytes_parsed++;
+			buf_step();
 			play_playlist();
 			buf_shift();
 		}
 		else if (*pbuf == 'J')//jump to position
 		{
-			pbuf++; bytes_parsed++;
+			buf_step();
 			parse_jump();
 			buf_shift();
 		}
 		else if (*pbuf == 'P')//start to sleep
 		{
-			pbuf++; bytes_parsed++;
+			buf_step();
 			start_sleep();
 			check_sleep();
 			buf_shift();
 		}
 		else if (*pbuf == 'O')//stop sleeping
 		{
-			pbuf++; bytes_parsed++;
+			buf_step();
 			stop_sleep();
 			buf_shift();
 		}
 		else if (*pbuf == 'C')//play full album from current song
 		{
-			pbuf++; bytes_parsed++;
+			buf_step();
 			play_album_now(); //commented out just to try out the phone function
 			buf_shift();
 		}
@@ -362,7 +366,7 @@ void parse_command()
 	//stream play commands
 	else if (*pbuf == 'M')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		if (*pbuf == 'A')//add stream
 			add_stream();
 		if (*pbuf == 'P')//play stream
@@ -373,7 +377,7 @@ void parse_command()
 	//data commands
 	else if (*pbuf == 'D')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		if (*pbuf == 'L')
 			send_songs_in_dir();
 		else if (*pbuf == 'C')
@@ -382,13 +386,13 @@ void parse_command()
 			get_history();
 		else if (*pbuf == 'S')
 		{
-			pbuf++; bytes_parsed++;
+			buf_step();
 			send_stats();
 			buf_shift();
 		}
 		else if (*pbuf == 'V')
 		{
-			pbuf++; bytes_parsed++;
+			buf_step();
 			buf_shift();
 			send_volume();
 		}
@@ -416,7 +420,7 @@ void parse_command()
 	//set property commands
 	else if (*pbuf == 'S')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		if (*pbuf == 'W')
 			change_weight();
 		else if (*pbuf == 'S')
@@ -427,7 +431,7 @@ void parse_command()
 			parse_config();
 		else if (*pbuf == 'D')//write config
 		{
-			pbuf++; bytes_parsed++;
+			buf_step();
 			write_config();
 			buf_shift();
 		}
@@ -449,18 +453,18 @@ void parse_command()
 	//queue commands
 	else if (*pbuf == 'Q')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		if (*pbuf == 'Q')
 			net_enqueue();
 		else if (*pbuf == 'G')
 		{
-			pbuf++; bytes_parsed++;
+			buf_step();
 			get_queue();
 			buf_shift();
 		}
 		else if (*pbuf == 'C')
 		{
-			pbuf++; bytes_parsed++;
+			buf_step();
 			clear_queue();
 			buf_shift();
 		}
@@ -482,7 +486,7 @@ void parse_command()
 //get all the songs in *dir and send one char of sticky data, nt, weight, nt, song name (not full path), nt
 int send_songs_in_dir()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	char dir[BUFF];
 	get_string_from_buf(dir);
 	song *data;
@@ -500,7 +504,7 @@ int send_songs_in_dir()
  */
 void get_track_list_by_playby()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	int tot;
 	song *data;
 	data = malloc(20000*sizeof(song));
@@ -530,7 +534,7 @@ void get_track_list_by_playby()
 }
 void get_query()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	char field[64];
 	get_string_from_buf(field);
 	char query[1024];
@@ -547,14 +551,14 @@ void get_query()
 }
 void get_list_of_all_fields()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	get_complete_field_list(pbuf[0]);
-	pbuf++; bytes_parsed++;
+	buf_step();
 	buf_shift();
 }
 void get_field_list()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	song *data;
 	int tot;
 	data = malloc(20000*sizeof(song));
@@ -564,7 +568,7 @@ void get_field_list()
 		tot = get_genres(&data);
 	else if (*pbuf == 'A')
 		tot = get_multisong_albums(&data);
-	pbuf++; bytes_parsed++;
+	buf_step();
 	printf("tot = %d\n", tot);
 	send_song_data(data, tot, 'A');
 	free(data);
@@ -572,27 +576,27 @@ void get_field_list()
 }
 void get_field_song_list()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	char item[1024];
 	song *data;
 	data = malloc(20000*sizeof(song));
 	int tot;
 	if (*pbuf == 'A')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		get_string_from_buf(item);
 		printf("TALB %s\n", item);
 		tot = get_songs_and_tags_by_field(&data, "TALB", item);
 	}
 	else if (*pbuf == 'T')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		get_string_from_buf(item);
 		tot = get_songs_and_tags_by_field(&data, "TPE1", item);
 	}
 	else if (*pbuf == 'G')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		get_string_from_buf(item);
 		tot = get_songs_and_tags_by_field(&data, "TCON", item);
 	}
@@ -604,26 +608,26 @@ void get_field_song_list()
 }
 void get_recent()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	int time;
 	song *data;
 	data = malloc(20000*sizeof(song));
 	int tot;
 	if (*pbuf == 'A')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		time = get_num_from_buf();
 		tot = get_recent_albums(&data, time);
 	}
 	else if (*pbuf == 'T')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		time = get_num_from_buf();
 		tot = get_recent_artists(&data, time);
 	}
 	else if (*pbuf == 'S')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		time = get_num_from_buf();
 		tot = get_recent_songs(&data, time);
 	}
@@ -633,7 +637,7 @@ void get_recent()
 }
 void get_config()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	buf_shift();
 	char com[BUFF];
 	com[0] = 'C';
@@ -728,7 +732,7 @@ void get_config()
 }
 int get_history()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	printf("get history\n");
 	song *data;
 	data = malloc(20000*sizeof(song));
@@ -742,14 +746,14 @@ int get_history()
 }
 void net_get_stream_history()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	get_stream_history();
 	buf_shift();
 }
 
 void parse_lyrics_request()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	char artist[256];
 	memset(artist, 0, 256);
 	get_string_from_buf(artist);
@@ -765,7 +769,7 @@ void parse_lyrics_request()
 //changes the weight of the current song by delta
 void change_weight()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	int delta = get_num_from_buf();
 	update_weight(delta);
 	buf_shift();
@@ -773,7 +777,7 @@ void change_weight()
 //changes the weight of a given song
 void change_song_weight()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	int weight = get_num_from_buf();
 	char song[BUFF];
 	get_string_from_buf(song);
@@ -783,7 +787,7 @@ void change_song_weight()
 //sets/unsets the sticky flag given a list or song
 void set_sticky()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	int flag = -1;
 	if (*pbuf == 'S')
 		flag = 0;
@@ -793,7 +797,7 @@ void set_sticky()
 		flag = 2;
 	else if (*pbuf == 'G')
 		flag = 3;
-	pbuf++; bytes_parsed++;
+	buf_step();
 	int sticky = get_num_from_buf();
 	char item[BUFF];
 	get_string_from_buf(item);
@@ -819,24 +823,24 @@ void set_sticky()
 //sets/unsets the sticky flag on the current song
 void set_current_sticky()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	int sticky = get_num_from_buf();
 	set_cursong_sticky(sticky);
 }
 void set_vol()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	int vol = get_num_from_buf();
 	set_volume(vol);
 	buf_shift();
 }
 void set_item_weight()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	char item[1024];
 	if (*pbuf == 'A')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		int weight = get_num_from_buf();
 		get_string_from_buf(item);
 		int ret = set_album_weight(item, weight);
@@ -844,14 +848,14 @@ void set_item_weight()
 	}
 	else if (*pbuf == 'T')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		int weight = get_num_from_buf();
 		get_string_from_buf(item);
 		set_artist_weight(item, weight);
 	}
 	else if (*pbuf == 'G')
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		int weight = get_num_from_buf();
 		get_string_from_buf(item);
 		set_genre_weight(item, weight);
@@ -862,7 +866,7 @@ void set_item_weight()
 }
 void set_tag()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	int num_tags = get_num_from_buf();
 	char file[BUFF];
 	get_string_from_buf(file);
@@ -878,7 +882,7 @@ void set_tag()
 		get_string_from_buf(field);
 		if (get_string_from_buf(tag) < 0)
 		{
-			pbuf++; bytes_parsed++;
+			buf_step();
 //		clear_mp3_tag(file, field);
 		}
 		fields[i] = malloc(strlen(field) + 1);
@@ -915,7 +919,7 @@ void set_tag()
 }
 void parse_config()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	get_string_from_buf(val.musicdir);
 	val.threshhold = get_num_from_buf();
 	get_string_from_buf(val.type);
@@ -934,7 +938,7 @@ void parse_config()
 }
 void parse_alarm_config()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	int i;
 	for (i = 0; i < 7; i++)
 	{
@@ -950,7 +954,7 @@ void parse_alarm_config()
 	int ret = get_string_from_buf(song);
 	if (ret < 0)
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		set_alarm_settings(start_vol, end_vol, fade, NULL);
 	}
 	else
@@ -959,7 +963,7 @@ void parse_alarm_config()
 }
 void parse_sleep_config()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	int play = get_num_from_buf();
 	int fade = get_num_from_buf();
 	set_sleep(play, fade);
@@ -970,18 +974,18 @@ void parse_sleep_config()
  */
 void update_database()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	update_songs();
 	buf_shift();
 }
 void net_play()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	char song[BUFF];
 	int len = get_string_from_buf(song);
 	if (len < 0)
 	{
-		pbuf++; bytes_parsed++;
+		buf_step();
 		while(play(NULL) != 0)
 			;
 	}
@@ -1019,14 +1023,14 @@ void parse_jump()
 }
 void net_enqueue()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	char song[BUFF];
 	get_string_from_buf(song);
 	enqueue(song);
 }
 void clear_n_queue()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	int count = get_num_from_buf();
 	int i;
 	for (i = 0; i < count; i++)
@@ -1038,7 +1042,7 @@ void clear_n_queue()
 }
 void add_stream()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	char url[1024];
 	get_string_from_buf(url);
 	if(url != NULL)
@@ -1047,7 +1051,7 @@ void add_stream()
 }
 void play_stream()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	char url[1024];
 	get_string_from_buf(url);
 	play_stream_now(url);
@@ -1055,7 +1059,7 @@ void play_stream()
 }
 void parse_phone_request()
 {
-	pbuf++; bytes_parsed++;
+	buf_step();
 	char dist[16];
 	get_string_from_buf(dist);
 	int thresh = get_num_from_buf();

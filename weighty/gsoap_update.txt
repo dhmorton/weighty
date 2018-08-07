@@ -1,0 +1,4 @@
+wsdl2h -cs -o lyrics.h http://lyrics.wikia.com/server.php?wsdl
+soapcpp2 -cC -Iimport lyrics.h
+make clean
+make all

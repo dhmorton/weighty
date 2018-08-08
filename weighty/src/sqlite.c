@@ -34,7 +34,6 @@
 #include "three_lists.h"
 
 sqlite3 *db;
-extern char *database;
 struct counts stats;
 int force_stay_connected = 0; //connected to database or not
 
@@ -53,7 +52,6 @@ static int search_all_tags(char*, song**);
 static int search_full_path(char*, song**);
 static void check_extension(char*);
 static int cmpstringp(const void*, const void*);
-
 
 /*
  * INITIALIZATION FUNCTIONS

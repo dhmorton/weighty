@@ -71,7 +71,6 @@ void stop_sleep()
 int read_sleep_config()
 {
 	FILE *fp;
-	extern char *sleepconfig;
 	if ((fp = fopen(sleepconfig, "r")) == NULL)
 		printf("config file doesn't exist\n");
 	else

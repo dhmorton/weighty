@@ -29,8 +29,6 @@
 #include "sqlite.h"
 #include "three_lists.h"
 
-
-
 static int check_all_songs_on_disk(const char*);
 
 int initialize()
@@ -43,7 +41,6 @@ int initialize()
 }
 void update_songs()
 {
-	extern struct config val;
 	printf("update songs\n");
 	init_added();
 	printf("check all songs on disk\n");

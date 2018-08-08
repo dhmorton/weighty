@@ -31,45 +31,9 @@
 #include "sleep.h"
 #include "sqlite.h"
 
-char *homedir = NULL;
-char *errorlog = NULL;
-char *alarmconfig = NULL;
-char *sleepconfig = NULL;
-char *streamconfig = NULL;
-char *configfile = NULL;
-char *database = NULL;
-
 int main(void)
 {
-	homedir = malloc(256);
-	memset(homedir, 0, 256);
-	char *home = getenv("HOME");
-	memcpy(homedir, home, strlen(home));
-	strcat(homedir, "/.weighty-new");
-	configfile = malloc(strlen(homedir) + 8);
-	memset(configfile, 0, strlen(homedir) + 8);
-	memcpy(configfile, homedir, strlen(homedir));
-	strcat(configfile, "/config");
-	errorlog = malloc(strlen(homedir) + 11);
-	memset(errorlog, 0, strlen(homedir) + 11);
-	memcpy(errorlog, homedir, strlen(homedir));
-	strcat(errorlog, "/error.log");
-	database = malloc(strlen(homedir) + 12);
-	memset(database, 0, strlen(homedir) + 12);
-	memcpy(database, homedir, strlen(homedir));
-	strcat(database, "/weighty.db");
-	alarmconfig = malloc(strlen(homedir) + 14);
-	memset(alarmconfig, 0, strlen(homedir) + 14);
-	memcpy(alarmconfig, homedir, strlen(homedir));
-	strcat(alarmconfig, "/alarm.config");
-	sleepconfig = malloc(strlen(homedir) + 14);
-	memset(sleepconfig, 0, strlen(homedir) + 14);
-	memcpy(sleepconfig, homedir, strlen(homedir));
-	strcat(sleepconfig, "/sleep.config");
-	streamconfig = malloc(strlen(homedir) + 15);
-	memset(streamconfig, 0, strlen(homedir) + 15);
-	memcpy(streamconfig, homedir, strlen(homedir));
-	strcat(streamconfig, "/stream.config");
+	init_files();
 	struct stat sbuf;
 	//first check to see the home directory exists
 	if (stat(homedir, &sbuf) == -1)

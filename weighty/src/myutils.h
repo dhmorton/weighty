@@ -16,6 +16,13 @@
 #include <unistd.h>
 #include <math.h>
 
+extern char* homedir;
+extern char* configfile;
+extern char* alarmconfig;
+extern char* sleepconfig;
+extern char* streamconfig;
+extern char* database;
+extern char* errorlog;
 extern struct config val;
 
 struct config {
@@ -39,6 +46,7 @@ typedef struct {
 	int sticky;
 } song;
 
+void init_files(void);
 void itoa(int, char*);
 int check_file(const char*);
 void translate_field(char*, char*);

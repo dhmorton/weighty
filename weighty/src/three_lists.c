@@ -21,7 +21,6 @@
  */
 #include "three_lists.h"
 
-
 #include "current_song.h"
 #include "list_utils.h"
 #include "net_utils.h"
@@ -61,7 +60,6 @@ static int back_count = 0;
 
 
 void three_lists_init() {
-	extern char* homedir;
 	int len = strlen(homedir);
 	init_head(&head);
 	init_head(&removed);
@@ -440,7 +438,6 @@ int get_backcount()
 //network functions-----------------------------------------------------
 void send_remaining()
 {
-	extern struct config val;
 	int played = 0;
 	int on_list = 0;
 	if(get_qcount() > 0)
@@ -489,7 +486,6 @@ void send_remaining()
 // generate playlist functions---------------------------------------------
 void generate_playlist()
 {
-	extern struct config val;
 	if(strcmp(val.playby, "song") == 0)
 	{
 		if(get_playnow_left() == 0)

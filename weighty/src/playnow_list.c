@@ -139,7 +139,6 @@ int set_cursong_from_playnow()
 //returns 1 or 0 based on current skip selection
 int playback_skip()
 {
-	extern struct config val;
 	if (! strcasecmp(val.playby, "song"))
 	{
 		if (val.song_skip)
@@ -165,7 +164,6 @@ int playback_skip()
 //returns 1 or 0 based on current random selection
 int playback_random()
 {
-	extern struct config val;
 	if (! strcasecmp(val.playby, "song"))
 	{
 		if (val.song_rand)

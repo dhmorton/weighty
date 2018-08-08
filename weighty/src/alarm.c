@@ -114,7 +114,6 @@ void set_alarm_settings(int start_vol, int end_vol, int fade, char *song)
 int read_alarm_config()
 {
 	FILE *fp;
-	extern char* alarmconfig;
 	if ((fp = fopen(alarmconfig, "r")) == NULL)
 		printf("config file doesn't exist\n");
 	else

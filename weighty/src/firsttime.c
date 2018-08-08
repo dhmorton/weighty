@@ -86,7 +86,6 @@ void set_musicdir(GtkWidget *entry)
 }
 void create_config(const char *musicdir)
 {
-	extern char *configfile;
 	char line[256];
 	memset(line, 0, 256);
 	FILE *fp;
@@ -117,7 +116,6 @@ void create_config(const char *musicdir)
 }
 void create_alarm_config()
 {
-	extern char *alarmconfig;
 	FILE *fp;
 	if ((fp = fopen(alarmconfig, "w")) == NULL)
 		printf("can't open config file for writing\n");
@@ -136,7 +134,6 @@ void create_alarm_config()
 }
 void create_sleep_config()
 {
-	extern char *sleepconfig;
 	FILE *fp;
 	if ((fp = fopen(sleepconfig, "w")) == NULL)
 		printf("can't open config file for writing\n");
@@ -149,7 +146,6 @@ void create_sleep_config()
 }
 void create_stream_config()
 {
-	extern char *streamconfig;
 	FILE *fp;
 	if ((fp = fopen(streamconfig, "w")) == NULL)
 		printf("can't open config file for writing\n");

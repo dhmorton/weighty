@@ -24,15 +24,55 @@
 
 #include "net_utils.h"
 
+char *homedir = NULL;
+char *configfile = NULL;
+char *alarmconfig = NULL;
+char *sleepconfig = NULL;
+char *streamconfig = NULL;
+char *database = NULL;
+char *errorlog = NULL;
+
 struct config val;
 
 static void reverse(char*);
+
+void init_files()
+{
+	homedir = malloc(256);
+	memset(homedir, 0, 256);
+	char *home = getenv("HOME");
+	memcpy(homedir, home, strlen(home));
+	strcat(homedir, "/.weighty-new");
+	configfile = malloc(strlen(homedir) + 8);
+	memset(configfile, 0, strlen(homedir) + 8);
+	memcpy(configfile, homedir, strlen(homedir));
+	strcat(configfile, "/config");
+	alarmconfig = malloc(strlen(homedir) + 14);
+	memset(alarmconfig, 0, strlen(homedir) + 14);
+	memcpy(alarmconfig, homedir, strlen(homedir));
+	strcat(alarmconfig, "/alarm.config");
+	sleepconfig = malloc(strlen(homedir) + 14);
+	memset(sleepconfig, 0, strlen(homedir) + 14);
+	memcpy(sleepconfig, homedir, strlen(homedir));
+	strcat(sleepconfig, "/sleep.config");
+	streamconfig = malloc(strlen(homedir) + 15);
+	memset(streamconfig, 0, strlen(homedir) + 15);
+	memcpy(streamconfig, homedir, strlen(homedir));
+	strcat(streamconfig, "/stream.config");
+	database = malloc(strlen(homedir) + 12);
+	memset(database, 0, strlen(homedir) + 12);
+	memcpy(database, homedir, strlen(homedir));
+	strcat(database, "/weighty.db");
+	errorlog = malloc(strlen(homedir) + 11);
+	memset(errorlog, 0, strlen(homedir) + 11);
+	memcpy(errorlog, homedir, strlen(homedir));
+	strcat(errorlog, "/error.log");
+}
 
 //just for positive integers
 void itoa(int n, char s[])
 {
     int i = 0;
-
     do {       /* generate digits in reverse order */
         s[i++] = n % 10 + '0';   /* get next digit */
     } while ((n /= 10) > 0);     /* delete it */
@@ -196,7 +236,6 @@ int read_config()
 {
 	printf("reading config...");
 	FILE *fp;
-	extern char *configfile;
 
 	if ((fp = fopen(configfile, "r")) == NULL)
 		printf("config file doesn't exist\n");
@@ -283,7 +322,6 @@ void write_config()
 {
 	char line[256];
 	memset(line, 0, 256);
-	extern char *configfile;
 	FILE *fp;
 
 	if ((fp = fopen(configfile, "w")) == NULL)

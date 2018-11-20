@@ -31,6 +31,7 @@ char *sleepconfig = NULL;
 char *streamconfig = NULL;
 char *database = NULL;
 char *errorlog = NULL;
+char *discogs = NULL;
 
 struct config val;
 
@@ -67,6 +68,10 @@ void init_files()
 	memset(errorlog, 0, strlen(homedir) + 11);
 	memcpy(errorlog, homedir, strlen(homedir));
 	strcat(errorlog, "/error.log");
+	discogs = malloc(strlen(homedir) + 8);
+	memset(discogs, 0, strlen(homedir) + 8);
+	memcpy(discogs, homedir, strlen(homedir));
+	strcat(discogs, "/discogs");
 }
 
 //just for positive integers
@@ -487,6 +492,6 @@ int should_play(int weight)
 		f = &flat;
 	prob = f(weight, val.threshhold, val.var);
 	p = ((double) random())/((double) RAND_MAX + 1);
-	printf("should_play weight = %d\tp = %f\tprob = %f\n", weight, p, prob);
+	//printf("weight = %d p = %f prob = %f\n", weight, p, prob);
 	return(prob >= p);
 }

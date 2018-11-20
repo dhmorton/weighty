@@ -23,6 +23,7 @@ extern char* sleepconfig;
 extern char* streamconfig;
 extern char* database;
 extern char* errorlog;
+extern char* discogs;
 extern struct config val;
 
 struct config {

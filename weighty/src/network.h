@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include <sys/socket.h>
 #include <sys/select.h>

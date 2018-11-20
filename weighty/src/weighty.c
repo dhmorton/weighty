@@ -45,28 +45,37 @@ int main(void)
 		else
 			get_musicdir();
 	}
+	//initialize stuff from the config files
 	connect_to_database(1);
-	//read the config file and set the saved values
 	read_config();
 	read_alarm_config();
 	read_sleep_config();
 	//start up xine
 	initialize();
+	struct sigaction sigact;
+		int ret;
+		memset(&sigact, 0, sizeof(sigact));
+		sigact.sa_handler = SIG_IGN;
+		sigact.sa_flags = SA_RESTART;
+		ret = sigaction(SIGPIPE, &sigact, NULL);
+		if(ret)
+			error("SIGPIPE error");
 	//if everything went ok then we can fork and let the parent die
 	int sock = create_new_socket();
 	//start the bluetooth thread
 	bt_init();
-	//daemonize();
+	daemonize();
 	//hit the main server loop
 	weighty(sock);
 	return 0;
 }
 int daemonize()
 {
-	printf("daemonizing...");
-	daemon(0, 1);
-	printf("DONE\n");
+	printf("daemonizing\n");
+	//daemon(0, 1);
+	//TODO
 	//open stderr to errorlog
+	freopen(errorlog, "w", stderr);
 	//open stdout to out.log
 	//open stdin to /dev/null
 

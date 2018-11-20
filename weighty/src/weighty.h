@@ -19,10 +19,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-extern char* alarmconfig;
-extern char* streamconfig;
-extern char* configfile;
-extern char* database;
+extern char* errorlog;
 
 int daemonize(void);
 

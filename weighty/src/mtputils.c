@@ -209,7 +209,7 @@ void* get_songs_for_phone(void* data_args)
 	else if (!strncmp(args->time_s, "years", 5))
 		time_mult = args->time * 3600 * 24 * 365;
 	else
-		time_mult = 3600 * 24 * 365 * 40;//40 years - FIXME - should be earliest date in database
+		time_mult = 3600 * 24 * 365 * 20;//20 years - FIXME - should be earliest date in database
 
 	//connect to the phone first
 	LIBMTP_raw_device_t *rawdevices;

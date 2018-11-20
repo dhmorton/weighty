@@ -89,6 +89,7 @@ static void set_tag(void);
 static void set_vol(void);
 static void set_item_weight(void);
 static void parse_phone_request(void);
+static void send_discogs_key(void);
 
 /*
  * Socket and data functions
@@ -99,6 +100,7 @@ static void parse_phone_request(void);
 	tv.tv_sec = 0;
 	tv.tv_usec = 100;
 	struct sockaddr_in client_addr;
+
 	while (1)
 	{
 		fd_set read_socks = socks;
@@ -156,7 +158,7 @@ int create_new_socket()
 	if (listen(mysock, 1) < 0)
 		error("listen failed");
 
-	printf("DONE\tlistening on %d to socket %d\n", PORT, mysock);
+	printf("\tlistening on %d to socket %d\n", PORT, mysock);
 	setnonblocking(&mysock);
 	FD_ZERO(&socks);
 	FD_SET(mysock, &socks);
@@ -414,6 +416,11 @@ void parse_command()
 			parse_lyrics_request();
 		else if (*pbuf == 'P')//transfer data to phone
 			parse_phone_request();
+		else if (*pbuf == 'D')//get discogs key
+		{
+			buf_step();
+			send_discogs_key();
+		}
 		else
 			printf("No such D command %s\n", pbuf);
 	}
@@ -750,7 +757,6 @@ void net_get_stream_history()
 	get_stream_history();
 	buf_shift();
 }
-
 void parse_lyrics_request()
 {
 	buf_step();
@@ -986,8 +992,7 @@ void net_play()
 	if (len < 0)
 	{
 		buf_step();
-		while(play(NULL) != 0)
-			;
+		next();
 	}
 	else
 		play(song);
@@ -998,8 +1003,7 @@ void play_album_now()
 	printf("play full album\n");
 	//set_playing_full_album();
 	add_current_album_to_playlist();
-	while(play(NULL))
-		;
+	next();
 }
 void play_playlist()
 {
@@ -1072,4 +1076,23 @@ void parse_phone_request()
 	get_string_from_buf(data_s);
 	//printf("%s %d %d %d %s %d %s\n", dist, thresh, var, time, time_s, data, data_s);
 	phone_thread_init(dist, thresh, var, time, time_s, data, data_s);
+}
+void send_discogs_key()
+{
+	char key[41];
+	key[40] = 0;
+	int fd;
+
+	if ((fd = open(discogs, O_RDONLY)) == -1)
+		printf("discogs file doesn't exist\n");
+	else
+	{
+		read(fd, key, 40);
+		char com[42];
+		com[0] = 'Z';
+		com[41] = 0;
+		memcpy(&com[1], key, 40);
+		send_command(com, strlen(com) + 1);
+		print_data(com, strlen(com) + 1);
+	}
 }

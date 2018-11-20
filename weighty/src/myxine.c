@@ -33,6 +33,7 @@
 #include "queue.h"
 #include "three_lists.h"
 #include "sqlite.h"
+#include "audioout.h"
 
 static xine_t *xine;
 static xine_stream_t *stream;
@@ -431,8 +432,8 @@ int get_volume()
 {
 	if (xine_running == 0)
 		start_xine();
-	int vol = xine_get_param (stream, XINE_PARAM_AUDIO_VOLUME);
-	printf("VOL = %d\n", vol);
+	int vol = xine_get_param(stream, XINE_PARAM_AUDIO_VOLUME);
+	//printf("VOL = %d\n", vol);
 	return vol;
 }
 void send_volume()
@@ -518,27 +519,18 @@ void myxine_init() {
 	stream_history = malloc(sizeof(stream_track)*10000);
 	queue_init();
 }
+//sends the length of the song in milliseconds
 void send_time()
 {
-	int pos_stream;
-	int pos_time;
-	int length_time;
-	int ret = xine_get_pos_length(stream, &pos_stream, &pos_time, &length_time);
-	if (ret)
-	{
-		char len[10];
-		//itoa(length_time, len);
-		snprintf(len, 10, "%d", length_time);
-		char com[12];
-		com[0] = 'M';//time data
-		char *pcom = &com[1];
-		memcpy(pcom, len, strlen(len));
-		pcom += strlen(len);
-		memcpy(pcom, "\0", 1);
-		send_command(com, strlen(len) + 2);
-	}
-	else
-		printf("can't get time from xine\n");
+	long playing_seconds = (long) playing_time();
+	printf("playing time = %li\n", playing_seconds);
+	char len[10];
+	snprintf(len, 10, "%li", playing_seconds * 1000);
+	char com[12];
+	com[0] = 'M';//time data
+	memcpy(&com[1], len, strlen(len));
+	com[strlen(len) + 2] = 0;
+	send_command(com, strlen(len) + 2);
 }
 int update_gui()
 {
@@ -566,19 +558,16 @@ int update_progressbar()
 {
 	if (! is_running())
 		return 1;
-	int pos_stream;
-	int pos_time = 0;
-	int length_time = 1;
-	int ret = xine_get_pos_length(stream, &pos_stream, &pos_time, &length_time);
-	if (ret)
+	if(play_file_finished())
 	{
-		//printf("%d\t%d\t%d\n", pos_stream, pos_time, length_time);
-		int permil = 0;
-		if (length_time != 0)
-			permil = (1000 * pos_time)/length_time;
-		else
-			permil = 500;
-
+		free_cursong();
+		while(play(NULL))
+			;
+		return 0;
+	}
+	else {
+		float percent = progress();
+		int permil = percent * 1000;
 		char p[5] = {0};
 		snprintf(p, 4, "%d", permil);
 		char com[6];
@@ -590,8 +579,6 @@ int update_progressbar()
 		//printf("com = %s\tp = %s\n", com, p);
 		send_command(com, strlen(p) + 2);
 	}
-	else
-		printf("xine_get_pos_length failed\n");
 
 	return 0;
 }
@@ -607,7 +594,7 @@ int set_volume(int vol)
  */
 int play(char* song)
 {
-	if (xine_running == 0)
+	if(xine_running == 0)
 	{
 		start_xine();
 	}
@@ -620,6 +607,7 @@ int play(char* song)
 	{
 		printf("play song %s\n", song);
 		set_cursong(song);
+		ao_next();
 	}
 	else if (get_backcount() > 0)
 	{
@@ -646,22 +634,28 @@ int play(char* song)
 }
 void play_cursong()
 {
-	if (!xine_open(stream, cursong) || !xine_play(stream, 0, 0))
+	//sndfile doesn't support mpc so skip them
+	//play_file returns -1 if creating the thread fails
+	if(check_file(cursong) == 3 || play_file(cursong))
+	{
+		next();
+	}
+	else
+	{
+		running = 1;
+	}
+	/*else if (!xine_open(stream, cursong) || !xine_play(stream, 0, 0))
 	{
 		error("can't play song");
 		running = 0;
 		//try again
 		next();
 		return;
-	}
-	running = 1;
+	}*/
 }
 int stop()
 {
-	if (xine_running == 1) {
-		xine_stop(stream);
-		stop_xine();
-	}
+	ao_stop();
 	running = 0;
 	streaming = 0;
 
@@ -670,6 +664,7 @@ int stop()
 int next()
 {
 	running = 0;
+	ao_next();
 	free_cursong();
 	while(play(NULL))
 		;
@@ -679,6 +674,7 @@ int back()
 {
 	push_cursong_to_back();
 	running = 1;
+	ao_next();
 	play(NULL);
 	return 0;
 }
@@ -686,11 +682,13 @@ int pausetoggle()
 {
 	if(! running)
 		return 0;
+	ao_pause();
+	/*
 	if (xine_get_param(stream, XINE_PARAM_SPEED) != XINE_SPEED_PAUSE)
 		xine_set_param(stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
 	else
 		xine_set_param(stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
-
+	*/
 	return 0;
 }
 int jump_to_pos(int pos)
@@ -760,6 +758,6 @@ void stop_xine()
 			xine_close_audio_driver(xine, ao_port);
 		xine_exit(xine);
 		xine_running = 0;
-		printf("DONE\n");
+		printf("stopped\n");
 	}
 }

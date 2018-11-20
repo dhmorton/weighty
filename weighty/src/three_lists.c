@@ -521,13 +521,13 @@ void generate_playlist_from_list()
 		songs_played = 0;
 	}
 	get_random_node(&head, &removed, songs_on_list);
-	printf("playing song %s\n", removed->name);
+	//printf("playing song %s\t", removed->name);
 	push_to_playnow_list(removed->name, removed->weight, removed->sticky);
 	songs_played++;
 	songs_on_list--;
 
-	printf("songs on list = %d\n", songs_on_list);
-	printf("songs played = %d\n", songs_played);
+	//printf("songs on list = %d\n", songs_on_list);
+	//printf("songs played = %d\n", songs_played);
 }
 void generate_playlist_from_albumlist()
 {

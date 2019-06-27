@@ -39,10 +39,11 @@ static int playing = 0;
 
 int extension = -1;
 
-void* play_FLAC(void *);
-void* play_mp3(void*);
-void* play_ogg(void*);
-void* play_sndfile(void*);
+static void* play_FLAC(void *);
+static void* play_mp3(void*);
+static void* play_ogg(void*);
+static void* play_sndfile(void*);
+static float flac_progress(void);
 
 FLAC__bool decoder_constructor(const char *, int);
 void flac_error_hdl(const FLAC__StreamDecoder *, FLAC__StreamDecoderErrorStatus, void *);
@@ -64,15 +65,15 @@ int play_file(const char *filename)
 	case 1:
 		play_func = &play_mp3;
 		break;
-	/*case 2:
+	case 2:
 		play_func = &play_FLAC;
-		break;*/
+		break;
 	default:
 		play_func = &play_sndfile;
 	}
 	if(playing_thread != 0) {
 		if(!pthread_join(playing_thread, NULL)) {
-			printf("pthread_join error %s\n", strerror(errno));
+			//printf("pthread_join error %s\n", strerror(errno));
 		}
 	}
 	struct arg_struct args;
@@ -104,6 +105,8 @@ float playing_time() {
 	switch(extension) {
 	case 1:
 		return mp3_total_time;
+	case 2:
+		return FLAC_total_time;
 	default:
 		return total_time;
 	}
@@ -112,13 +115,18 @@ float progress() {
 	switch(extension) {
 	case 1:
 		return mp3_progress();
+	case 2:
+		return flac_progress();
 	default:
 		return sndfile_progress();
 	}
 	//return (FLAC_total_time != 0) ? FLAC_playing_time / FLAC_total_time : 0;
 }
 float sndfile_progress() {
-	return (total_items != 0) ? (float) items_read / total_items : 0;
+	return (total_items != 0) ? (float) items_read / total_items : 0.0;
+}
+float flac_progress() {
+	return (FLAC_total_time != 0) ? FLAC_playing_time / FLAC_total_time : 0.0;
 }
 int play_file_finished() {
 	return finished;
@@ -148,7 +156,6 @@ void* play_sndfile(void* data_args)
 	items_read = 0;
 	total_items = sfinfo.frames * sfinfo.channels;
 	total_time = (float) sfinfo.frames / sfinfo.samplerate;
-	printf("frames: %li samplerate: %d", sfinfo.frames, sfinfo.samplerate);
 	while((read = sf_read_short(file, buffer, buf_size)) != 0 && !interrupt) {
 		items_read += read;
 		ao_play(ao_dev, (char*) buffer, (int) (read * sizeof(short)));
@@ -228,6 +235,8 @@ void* play_mp3(void* data_args)
 	buffer = (unsigned char*) malloc(buffer_size * sizeof(unsigned char));
 	mpg123_open(mh, args->filename);
 	mpg123_getformat(mh, &rate, &channels, &encoding);
+	printf("encoding = %d\n", encoding * BITS);
+
 
 	/* set the output format and open the output device */
 	format.bits = mpg123_encsize(encoding) * BITS;
@@ -251,7 +260,7 @@ void* play_mp3(void* data_args)
 			usleep(20);
 		}
 		ao_play(ao_dev, (char *) buffer, done);
-		mp3_playing_time = mpg123_tell(mh);
+		mp3_playing_time = mpg123_tell(mh) / rate;
 	}
 	interrupt = 0;
 	/* clean up */
@@ -264,7 +273,6 @@ void* play_mp3(void* data_args)
 	finished = 1;
 	return data_args;
 }
-
 void* play_FLAC(void* data_args)
 {
 	FLAC_total_time = 0;
@@ -292,7 +300,6 @@ void* play_FLAC(void* data_args)
     FLAC__stream_decoder_delete(file_info.decoder);
     ao_close(ao_dev);
     finished = 1;
-    printf("FLAC thread finished\n");
     return data_args;
 }
 FLAC__bool decoder_constructor(const char *filename, int ao_driver)
@@ -308,8 +315,6 @@ FLAC__bool decoder_constructor(const char *filename, int ao_driver)
     	FLAC__stream_decoder_delete(file_info.decoder);
     	return false;
     }
-
-    //printf("ao_driver = %d\tao_fmt = %s\n", ao_driver, file_info.ao_fmt.matrix);
 	if (!(ao_dev = ao_open_live(ao_driver, &(file_info.ao_fmt), NULL)))
 	{
 		fprintf(stderr, "Error opening ao device %d\n", ao_driver);
@@ -323,7 +328,6 @@ void flac_error_hdl(const FLAC__StreamDecoder *dec,
 {
     printf("error handler called!\n");
 }
-
 void flac_metadata_hdl(const FLAC__StreamDecoder *dec,
 		       const FLAC__StreamMetadata *meta, void *data)
 {
@@ -331,6 +335,10 @@ void flac_metadata_hdl(const FLAC__StreamDecoder *dec,
 
     if(meta->type == FLAC__METADATA_TYPE_STREAMINFO) {
 		p->sam_fmt.bits = p->ao_fmt.bits = meta->data.stream_info.bits_per_sample;
+		if(p->ao_fmt.bits == 24) {
+		    p->ao_fmt.bits = 16;
+		    printf("Downgrading from 24 to 16 bit\n");
+		}
 		p->ao_fmt.rate = meta->data.stream_info.sample_rate;
 		p->ao_fmt.channels = meta->data.stream_info.channels;
 		p->ao_fmt.byte_format = AO_FMT_NATIVE;
@@ -339,49 +347,51 @@ void flac_metadata_hdl(const FLAC__StreamDecoder *dec,
 			(meta->data.stream_info.total_samples & 0xffffffff);
 		p->current_sample = 0;
 		p->total_time = (((float) p->total_samples) / p->ao_fmt.rate);
+	    FLAC_total_time = p->total_time;
     }
 }
-
-FLAC__StreamDecoderWriteStatus flac_write_hdl(const FLAC__StreamDecoder *dec,
-					      const FLAC__Frame *frame,
-					      const FLAC__int32 * const buf[],
-					      void *data)
+FLAC__StreamDecoderWriteStatus flac_write_hdl(const FLAC__StreamDecoder *dec, const FLAC__Frame *frame, const FLAC__int32 * const buf[], void *data)
 {
     int sample, channel, i;
     uint_32 samples = frame->header.blocksize;
     file_info_struct *p = (file_info_struct *) data;
-    uint_32 decoded_size = frame->header.blocksize * frame->header.channels
-	* (p->ao_fmt.bits / 8);
-    static uint_8 aobuf[FLAC__MAX_BLOCK_SIZE * FLAC__MAX_CHANNELS *
-			sizeof(uint_32) / 4]; /*oink!*/
-    uint_32 *u32aobuf = (uint_32 *) aobuf;
-    uint_16 *u16aobuf = (uint_16 *) aobuf;
-    uint_8   *u8aobuf = (uint_8  *) aobuf;
+    uint_32 decoded_size = frame->header.blocksize * frame->header.channels	* (p->ao_fmt.bits / 8);
+    //from flac-1.3.2 decode.c
+	static union
+	{	/* The arrays defined within this union are all the same size. */
+		FLAC__uint8  u8buffer	[FLAC__MAX_BLOCK_SIZE * FLAC__MAX_CHANNELS * sizeof(FLAC__int32)];
+		FLAC__uint16 u16buffer	[FLAC__MAX_BLOCK_SIZE * FLAC__MAX_CHANNELS * sizeof(FLAC__int16)];
+		FLAC__uint32 u32buffer	[FLAC__MAX_BLOCK_SIZE * FLAC__MAX_CHANNELS];
+	} ubuf;
+
     float elapsed, remaining_time;
 
     if (p->sam_fmt.bits == 8) {
         for (sample = i = 0; sample < samples; sample++) {
 			for(channel = 0; channel < frame->header.channels; channel++,i++) {
-			   u8aobuf[i] = buf[channel][sample];
+			   ubuf.u8buffer[i] = buf[channel][sample];
 			}
         }
     }
     else if (p->sam_fmt.bits == 16) {
         for (sample = i = 0; sample < samples; sample++) {
 			for(channel = 0; channel < frame->header.channels; channel++,i++) {
-				u16aobuf[i] = (uint_16)(buf[channel][sample]);
+				ubuf.u16buffer[i] = (uint_16)(buf[channel][sample]);
 			}
         }
+        ao_play(ao_dev, (char*) ubuf.u8buffer, decoded_size);
     }
     else if(p->sam_fmt.bits == 24) {
-    	printf("%d bit FLAC\n", p->sam_fmt.bits);
     	for(sample = i = 0; sample < samples; sample++) {
-    		for(channel = 0; channel < frame->header.channels; channel++, i++) {
-    			u32aobuf[i] = (uint_32)(buf[channel][sample]);
-    		}
+    		for(channel = 0; channel < frame->header.channels; channel++, i++)
+    			//take off the lowest 8 bits to squeze it into a 16 bit output
+    			ubuf.u16buffer[i] = (uint_16)(buf[channel][sample] >> 8);
     	}
+        ao_play(ao_dev, (char*) ubuf.u8buffer, decoded_size);
     }
-    ao_play(ao_dev, (char*) aobuf, decoded_size);
+    else {
+    	printf("%d bit FLAC\n", p->sam_fmt.bits);
+    }
 
     p->current_sample += samples;
     elapsed = ((float) samples) / frame->header.sample_rate;

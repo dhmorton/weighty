@@ -28,6 +28,9 @@ struct counts stats;
 void update_socks (int sock) {
 	FD_SET(sock, &socks_copy);
 }
+void clear_sock(int sock) {
+	FD_CLR(sock, &socks_copy);
+}
 void send_update(char adm, char* song)
 {
 	char com[BUFF];

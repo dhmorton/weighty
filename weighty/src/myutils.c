@@ -68,8 +68,8 @@ void init_files()
 	memset(errorlog, 0, strlen(homedir) + 11);
 	memcpy(errorlog, homedir, strlen(homedir));
 	strcat(errorlog, "/error.log");
-	discogs = malloc(strlen(homedir) + 8);
-	memset(discogs, 0, strlen(homedir) + 8);
+	discogs = malloc(strlen(homedir) + 9);
+	memset(discogs, 0, strlen(homedir) + 9);
 	memcpy(discogs, homedir, strlen(homedir));
 	strcat(discogs, "/discogs");
 }
@@ -494,4 +494,23 @@ int should_play(int weight)
 	p = ((double) random())/((double) RAND_MAX + 1);
 	//printf("weight = %d p = %f prob = %f\n", weight, p, prob);
 	return(prob >= p);
+}
+void send_discogs_key()
+{
+	char key[41];
+	key[40] = 0;
+	int fd;
+
+	if ((fd = open(discogs, O_RDONLY)) == -1)
+		printf("discogs file doesn't exist\n");
+	else
+	{
+		read(fd, key, 40);
+		char com[42];
+		com[0] = 'Z';
+		com[41] = 0;
+		memcpy(&com[1], key, 40);
+		send_command(com, strlen(com) + 1);
+		print_data(com, strlen(com) + 1);
+	}
 }

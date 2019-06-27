@@ -464,6 +464,8 @@ int check_against_added(const char *file)
 }
 hash_element* get_element(const char* file)
 {
+	if(file == NULL)
+		return NULL;
 	int key = hash_song(file);
 	hash_element *chain;
 	chain = hash_table[key];

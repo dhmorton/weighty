@@ -523,7 +523,6 @@ void myxine_init() {
 void send_time()
 {
 	long playing_seconds = (long) playing_time();
-	printf("playing time = %li\n", playing_seconds);
 	char len[10];
 	snprintf(len, 10, "%li", playing_seconds * 1000);
 	char com[12];
@@ -579,7 +578,6 @@ int update_progressbar()
 		//printf("com = %s\tp = %s\n", com, p);
 		send_command(com, strlen(p) + 2);
 	}
-
 	return 0;
 }
 int set_volume(int vol)
@@ -634,9 +632,9 @@ int play(char* song)
 }
 void play_cursong()
 {
-	//sndfile doesn't support mpc so skip them
+	//sndfile doesn't support mpc, m4a or mwa so skip them
 	//play_file returns -1 if creating the thread fails
-	if(check_file(cursong) == 3 || play_file(cursong))
+	if(check_file(cursong) == 3 || check_file(cursong) == 4 || check_file(cursong) == 6 || play_file(cursong))
 	{
 		next();
 	}

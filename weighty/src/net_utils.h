@@ -49,6 +49,7 @@ struct counts {
 };
 
 void update_socks(int);
+void clear_sock(int);
 void send_update(char, char*);
 int send_weight_sticky_data(int, int);
 int send_playing(char*);

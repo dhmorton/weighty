@@ -63,5 +63,6 @@ float gaussian(int, int, int);
 float flat(int, int, int);
 float get_constant(int);
 int should_play(int);
+void send_discogs_key(void);
 
 #endif /* SRC_MYUTILS_H_ */

@@ -89,7 +89,6 @@ static void set_tag(void);
 static void set_vol(void);
 static void set_item_weight(void);
 static void parse_phone_request(void);
-static void send_discogs_key(void);
 
 /*
  * Socket and data functions
@@ -198,6 +197,7 @@ int recv_data(int sock)
 		printf("socket closed: FD=%d\n", sock);
 		close(sock);
 		FD_CLR(sock, &socks);
+		clear_sock(sock);
 		return -1;
 	}
 	else if (recv > 0)
@@ -1077,22 +1077,4 @@ void parse_phone_request()
 	//printf("%s %d %d %d %s %d %s\n", dist, thresh, var, time, time_s, data, data_s);
 	phone_thread_init(dist, thresh, var, time, time_s, data, data_s);
 }
-void send_discogs_key()
-{
-	char key[41];
-	key[40] = 0;
-	int fd;
 
-	if ((fd = open(discogs, O_RDONLY)) == -1)
-		printf("discogs file doesn't exist\n");
-	else
-	{
-		read(fd, key, 40);
-		char com[42];
-		com[0] = 'Z';
-		com[41] = 0;
-		memcpy(&com[1], key, 40);
-		send_command(com, strlen(com) + 1);
-		print_data(com, strlen(com) + 1);
-	}
-}

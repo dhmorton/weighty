@@ -396,6 +396,8 @@ void make_push_song_node(char* file, int weight, int sticky)
 // backlist functions--------------------------
 void push_cursong_to_back()
 {
+	if(cursong == NULL)
+		return;
 	if(back_count == 0)
 	{
 		init_head(&back_head);

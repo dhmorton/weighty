@@ -14,6 +14,7 @@
 
 void playnow_list_init(void);
 void add_current_album_to_playlist(void);
+void add_field_to_playlist(char*, char*);
 void push_to_playnow_list(char*, int, int);
 int get_playnow_left(void);
 int set_cursong_from_playnow(void);

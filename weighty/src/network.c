@@ -72,6 +72,7 @@ static void get_query(void);
 static void parse_lyrics_request(void);
 static void play_playlist(void);
 static void play_album_now(void);
+static void play_by_field(void);
 static void net_enqueue(void);
 static void parse_jump(void);
 static void clear_n_queue(void);
@@ -331,10 +332,11 @@ void parse_command()
 			buf_step();
 			buf_shift();
 		}
-		else if (*pbuf == 'F')//play new list now
+		else if (*pbuf == 'F')//play by field from List tab
 		{
 			buf_step();
-			play_playlist();
+//			play_playlist();
+			play_by_field();
 			buf_shift();
 		}
 		else if (*pbuf == 'J')//jump to position
@@ -1001,8 +1003,17 @@ void net_play()
 void play_album_now()
 {
 	printf("play full album\n");
-	//set_playing_full_album();
 	add_current_album_to_playlist();
+	next();
+}
+void play_by_field()
+{
+	char field[5];//TALB, TPE1, TCON
+	get_string_from_buf(field);
+	char name[BUFF];
+	get_string_from_buf(name);
+	printf("play_by_field %s %s\n", field, name);
+	add_field_to_playlist(field, name);
 	next();
 }
 void play_playlist()

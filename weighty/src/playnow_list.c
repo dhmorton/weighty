@@ -58,9 +58,7 @@ void playnow_list_init()
 void push_to_playnow_list(char *file, int weight, int sticky)
 {
 	if(list_head == NULL)
-	{
 		playnow_list_init();
-	}
 	make_push_node(&list_head, file, weight, sticky);
 	songs_on_playnow_list++;
 }
@@ -74,6 +72,13 @@ void add_current_album_to_playlist()
 	int tot = add_to_playnow_list_by_field("TALB", album);
 	printf("found %d songs\n", tot);
 	free(album);
+	play_full_album = 1;
+}
+void add_field_to_playlist(char *field, char *name)
+{
+	clear_playnow_lists();
+	int tot = add_to_playnow_list_by_field(field, name);
+	printf("found %d songs\n", tot);
 	play_full_album = 1;
 }
 int set_cursong_from_playnow()
@@ -94,7 +99,7 @@ int set_cursong_from_playnow()
 			songs_played++;
 			songs_on_playnow_list--;
 			if(should_play(rem->weight)) {
-				printf("testing should_play %d\n", rem->weight);
+				//printf("testing should_play %d\n", rem->weight);
 				break;
 			}
 			add_to_skipped(rem->name);
@@ -104,6 +109,7 @@ int set_cursong_from_playnow()
 	}
 	else if(playback_random() && ! play_full_album && songs_on_playnow_list > 0)
 	{
+		printf("playback random\n");
 		int n = random() % songs_on_playnow_list;
 		get_random_node(&list_head, &rem, n);
 		songs_on_playnow_list--;
@@ -186,10 +192,9 @@ int playback_random()
 	}
 	return 0;
 }
-
 void clear_playnow_lists()
 {
-	printf("CLEARING LISTS\n");
+	//printf("CLEARING LISTS\n");
 	if(list_head != NULL)
 	{
 		free(list_head);

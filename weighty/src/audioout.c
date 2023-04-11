@@ -244,10 +244,16 @@ void* play_mp3(void* data_args)
 	format.channels = channels;
 	format.byte_format = AO_FMT_NATIVE;
 	format.matrix = 0;
-	ao_dev = ao_open_live(ao_driver, &format, NULL);
-	if(ao_dev == NULL)
-	{
-		printf("ao_open_live error %s\n", strerror(errno));
+	printf("rate = %d\n", format.rate);
+	int count = 0;
+	while(count < 3) {
+		ao_dev = ao_open_live(ao_driver, &format, NULL);
+		if(ao_dev == NULL)	{
+			printf("ao_open_live error %s\n", strerror(errno));
+			count++;
+		}
+		else
+			count = 3;
 	}
 	struct mpg123_frameinfo mi;
 	mpg123_info(mh, &mi);
@@ -269,7 +275,7 @@ void* play_mp3(void* data_args)
 	mpg123_close(mh);
 	mpg123_delete(mh);
 	mpg123_exit();
-	printf("MP3 thread finished\n");
+	printf("MP3 thread finished\n\n");
 	finished = 1;
 	return data_args;
 }

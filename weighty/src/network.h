@@ -22,7 +22,7 @@
 #include <arpa/inet.h>
 
 //Number of microseconds to sleep for each cycle
-#define TICK 100000
+#define TICK 300000
 
 //socket and data commands
 /*

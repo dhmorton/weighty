@@ -70,7 +70,6 @@ static void net_get_stream_history(void);
 static void get_config(void);
 static void get_query(void);
 static void parse_lyrics_request(void);
-static void play_playlist(void);
 static void play_album_now(void);
 static void play_by_field(void);
 static void net_enqueue(void);
@@ -768,7 +767,7 @@ void parse_lyrics_request()
 	char title[256];
 	memset(title, 0, 256);
 	get_string_from_buf(title);
-	get_lyrics(artist, title);
+	//get_lyrics(artist, title);
 	buf_shift();
 }
 /*
@@ -1014,21 +1013,6 @@ void play_by_field()
 	get_string_from_buf(name);
 	printf("play_by_field %s %s\n", field, name);
 	add_field_to_playlist(field, name);
-	next();
-}
-void play_playlist()
-{
-	clear_playnow_lists();
-	int num = get_num_from_buf();
-	int i = 0;
-	for (i = 0; i < num; i++)
-	{
-		char file[BUFF];
-		get_string_from_buf(file);
-		int a[2];
-		retrieve_by_song(file, a);
-		push_to_playnow_list(file, a[0], a[1]);
-	}
 	next();
 }
 void parse_jump()

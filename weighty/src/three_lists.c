@@ -483,6 +483,7 @@ void send_remaining()
 	p += strlen(num);
 	memcpy(p++, "/", 1);
 	memcpy(p, total, strlen(total) + 1);
+	printf("remaining command = %s\n", playing);
 	send_command(playing, strlen(playing) + 1);
 }
 // generate playlist functions---------------------------------------------

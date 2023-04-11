@@ -44,7 +44,6 @@ void set_cursong(char* song) {
 		sticky = a[1];
 	}
 }
-
 void set_cursong_sticky(int s) {
 	if(cursong == NULL)
 		return;

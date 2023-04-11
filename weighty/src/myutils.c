@@ -33,7 +33,7 @@ char *database = NULL;
 char *errorlog = NULL;
 char *discogs = NULL;
 
-struct config val;
+//struct config val;
 
 static void reverse(char*);
 
@@ -511,6 +511,5 @@ void send_discogs_key()
 		com[41] = 0;
 		memcpy(&com[1], key, 40);
 		send_command(com, strlen(com) + 1);
-		print_data(com, strlen(com) + 1);
 	}
 }

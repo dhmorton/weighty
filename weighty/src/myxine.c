@@ -530,6 +530,7 @@ void send_time()
 	memcpy(&com[1], len, strlen(len));
 	com[strlen(len) + 2] = 0;
 	send_command(com, strlen(len) + 2);
+	print_data(com, strlen(len) + 2);
 }
 int update_gui()
 {

@@ -66,7 +66,6 @@ static void get_field_list(void);
 static void get_field_song_list(void);
 static void get_recent(void);
 static int get_history(void);
-static void net_get_stream_history(void);
 static void get_config(void);
 static void get_query(void);
 static void parse_lyrics_request(void);
@@ -79,8 +78,6 @@ static void update_database(void);
 static void parse_config(void);
 static void parse_alarm_config(void);
 static void parse_sleep_config(void);
-static void add_stream(void);
-static void play_stream(void);
 static void change_weight(void);
 static void change_song_weight(void);
 static void set_sticky(void);
@@ -93,13 +90,14 @@ static void parse_phone_request(void);
 /*
  * Socket and data functions
  */
- void weighty(int sock)
+void weighty(int sock)
 {
 	struct timeval tv;
 	tv.tv_sec = 0;
 	tv.tv_usec = 100;
 	struct sockaddr_in client_addr;
 
+	//the main loop
 	while (1)
 	{
 		fd_set read_socks = socks;
@@ -295,6 +293,7 @@ void parse_command()
 	//playback commands
 	if (data_buf_len - bytes_parsed < 2)
 		printf("parse wait\n");//wait if there aren't at least two chars to parse
+	//playback commands
 	else if (*pbuf == 'P')
 	{
 		buf_step();
@@ -365,17 +364,6 @@ void parse_command()
 		}
 		else
 			printf("No such P command %s\n", pbuf);
-	}
-	//stream play commands
-	else if (*pbuf == 'M')
-	{
-		buf_step();
-		if (*pbuf == 'A')//add stream
-			add_stream();
-		if (*pbuf == 'P')//play stream
-			play_stream();
-		if (*pbuf == 'H')//stream history
-			net_get_stream_history();//wrapper
 	}
 	//data commands
 	else if (*pbuf == 'D')
@@ -752,12 +740,6 @@ int get_history()
 	//print_data(pbuf, data_buf_len - bytes_parsed);
 	return 0;
 }
-void net_get_stream_history()
-{
-	buf_step();
-	get_stream_history();
-	buf_shift();
-}
 void parse_lyrics_request()
 {
 	buf_step();
@@ -1037,22 +1019,6 @@ void clear_n_queue()
 		int index = get_num_from_buf();
 		clear_queue_by_index(index);
 	}
-	buf_shift();
-}
-void add_stream()
-{
-	buf_step();
-	char url[1024];
-	get_string_from_buf(url);
-	get_new_stream_data(url);
-	buf_shift();
-}
-void play_stream()
-{
-	buf_step();
-	char url[1024];
-	get_string_from_buf(url);
-	play_stream_now(url);
 	buf_shift();
 }
 void parse_phone_request()

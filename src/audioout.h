@@ -21,6 +21,7 @@
 #include <mpg123.h>
 #include <vorbis/vorbisfile.h>
 #include <sndfile.h>
+#include <miniaudio/miniaudio.h>
 
 #define VORBIS_TAG_LEN 30
 #define VORBIS_YEAR_LEN 4

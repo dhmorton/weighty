@@ -147,7 +147,7 @@ int read_alarm_config()
 		}
 		if (line)
 			free(line);
+		fclose(fp);
 	}
-	fclose(fp);
 	return 0;
 }

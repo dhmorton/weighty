@@ -318,9 +318,8 @@ int read_config()
 		}
 		if (line)
 			free(line);
+		fclose(fp);
 	}
-	fclose(fp);
-	printf("DONE\n");
 	return 0;
 }
 void write_config()

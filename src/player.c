@@ -34,8 +34,6 @@ static int check_all_songs_on_disk(const char*);
 int initialize()
 {
 	srandom(time(NULL));//seed random number generator
-	start_xine();
-	myxine_init();
 	three_lists_init();
 	return 0;
 }

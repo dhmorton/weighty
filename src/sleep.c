@@ -85,7 +85,7 @@ int read_sleep_config()
 			sleep_fade.fade = atoi(line);
 		if (line)
 			free(line);
+		fclose(fp);
 	}
-	fclose(fp);
 	return 0;
 }

@@ -44,6 +44,7 @@ static void* play_mp3(void*);
 static void* play_ogg(void*);
 static void* play_sndfile(void*);
 static float flac_progress(void);
+static void data_callback(ma_device*, void*, const void*, ma_uint32);
 
 FLAC__bool decoder_constructor(const char *, int);
 void flac_error_hdl(const FLAC__StreamDecoder *, FLAC__StreamDecoderErrorStatus, void *);

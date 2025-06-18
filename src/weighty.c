@@ -64,20 +64,22 @@ int main(void)
 	int sock = create_new_socket();
 	//start the bluetooth thread
 	bt_init();
-	daemonize();
+	//daemonize();
 	//hit the main server loop
 	weighty(sock);
 	return 0;
 }
 int daemonize()
 {
-	printf("daemonizing\n");
-	//daemon(0, 1);
 	//TODO
 	//open stderr to errorlog
-	freopen(errorlog, "w", stderr);
+	//freopen(errorlog, "w", stderr);
 	//open stdout to out.log
+	//char* stdlog = "/home/bob/log/weighty.log";
+	//freopen(stdlog, "w", stdin);
 	//open stdin to /dev/null
+	printf("daemonizing\n");
+	//daemon(0, 1);
 
 	return 0;
 }

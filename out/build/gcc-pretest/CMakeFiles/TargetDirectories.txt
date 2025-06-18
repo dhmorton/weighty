@@ -1,3 +1,0 @@
-/home/bob/c/weighty-vscode-cmake/weighty/out/build/gcc-pretest/CMakeFiles/weighty.dir
-/home/bob/c/weighty-vscode-cmake/weighty/out/build/gcc-pretest/CMakeFiles/edit_cache.dir
-/home/bob/c/weighty-vscode-cmake/weighty/out/build/gcc-pretest/CMakeFiles/rebuild_cache.dir

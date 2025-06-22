@@ -277,9 +277,7 @@ void send_command(char *com, int len)
 			}
 			if (len > 0)
 			{
-				//ssize_t ret = send(i, com, len, 0);
 				ssize_t ret = write(i, com, len);
-				//FIXME send should only run if there is a socket connection
 				if(ret == -1) {
 					error("write error");
 					return;

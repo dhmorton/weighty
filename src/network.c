@@ -48,6 +48,7 @@ static int bytes_parsed = 0;
 static int data_buf_len = 0;
 static int mysock;
 static fd_set socks;
+static int vol = 30;
 
 struct config val;
 
@@ -132,6 +133,10 @@ void weighty(int sock)
 		}
 		check_alarm();
 		check_sleep();
+		if(vol != get_volume()) {
+			send_volume();
+			vol = get_volume();
+		}
 		usleep(TICK);
 		update_progressbar();
 	}
@@ -279,6 +284,32 @@ void buf_step()
 {
 	pbuf++;
 	bytes_parsed++;
+}
+/* 	The command has four forms:
+*	1) it starts with a P and has something to do with playback commands
+*	2) it starts with a D and contains data 
+*	3) it starts with a S and it sets some property
+*	4) it starts with a Q and has something to do with queued music
+*/
+void get_next_command()
+{
+	switch(*pbuf)
+	{
+		case 'P':
+			printf("Playback\n");
+			break;
+		case 'D':
+			printf("Data\n");
+			break;
+		case 'S':
+			printf("Set\n");
+			break;
+		case 'Q':
+			printf("Queue\n");
+			break;
+		default:
+			printf("No command %d\n", *pbuf);
+	}
 }
 void flush_buffer()
 {
@@ -983,7 +1014,6 @@ void net_play()
 }
 void play_album_now()
 {
-	printf("play full album\n");
 	add_current_album_to_playlist();
 	next();
 }

@@ -118,7 +118,6 @@ void send_time()
 	memcpy(&com[1], len, strlen(len));
 	com[strlen(len) + 2] = 0;
 	send_command(com, strlen(len) + 2);
-	print_data(com, strlen(len) + 2);
 }
 int update_gui()
 {
@@ -198,17 +197,21 @@ int play(char* song)
 	}
 	running = 1;
 	add_to_history(cursong);
-	play_cursong();
+	play_song();
 	update_gui();
 	return 0;
 }
-void play_cursong()
+void play_song()
 {
 	//sndfile doesn't support mpc, m4a or mwa so skip them
 	//play_file returns -1 if creating the thread fails
 	if(check_file(cursong) == 3 || check_file(cursong) == 4 || check_file(cursong) == 6 || play_file(cursong)){
 			next();	}
 	else { 	running = 1; }
+}
+void play_cursong()
+{
+	cursong == NULL ? next() : play(cursong);
 }
 int stop()
 {

@@ -121,7 +121,6 @@ float progress() {
 	default:
 		return sndfile_progress();
 	}
-	//return (FLAC_total_time != 0) ? FLAC_playing_time / FLAC_total_time : 0;
 }
 float sndfile_progress() {
 	return (total_items != 0) ? (float) items_read / total_items : 0.0;
@@ -134,7 +133,6 @@ int play_file_finished() {
 }
 void* play_sndfile(void* data_args)
 {
-	printf("\tSNDFILE playing\n");
 	struct arg_struct *args = (struct arg_struct *) data_args;
 	ao_sample_format format;
 	SF_INFO sfinfo;
@@ -236,7 +234,7 @@ void* play_mp3(void* data_args)
 	buffer = (unsigned char*) malloc(buffer_size * sizeof(unsigned char));
 	mpg123_open(mh, args->filename);
 	mpg123_getformat(mh, &rate, &channels, &encoding);
-	printf("encoding = %d\n", encoding * BITS);
+	//printf("encoding = %d\n", encoding * BITS);
 
 
 	/* set the output format and open the output device */
@@ -259,7 +257,7 @@ void* play_mp3(void* data_args)
 	struct mpg123_frameinfo mi;
 	mpg123_info(mh, &mi);
 	mp3_total_time = (float) mpg123_length(mh) / mi.rate;
-	printf("mp3 seconds = %f\n", mp3_total_time);
+	//printf("mp3 seconds = %f\n", mp3_total_time);
 	/* decode and play */
 	while (mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK && !interrupt)
 	{
@@ -276,7 +274,6 @@ void* play_mp3(void* data_args)
 	mpg123_close(mh);
 	mpg123_delete(mh);
 	mpg123_exit();
-	printf("MP3 thread finished\n\n");
 	finished = 1;
 	return data_args;
 }

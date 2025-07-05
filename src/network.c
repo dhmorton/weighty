@@ -540,19 +540,19 @@ void get_track_list_by_playby()
 	if ((strcasecmp(val.playby, "song") == 0) || (strcasecmp(val.playby, "album") == 0))//get album listing
 	{
 		get_tag_from_song(cursong, tag, "TALB");
-		printf("album = %s\n", tag);
+		//printf("album = %s\n", tag);
 		tot = get_songs_by_field(&data, "TALB", tag);
 	}
 	else if (! strcasecmp(val.playby, "artist"))
 	{
 		get_tag_from_song(cursong, tag, "TPE1");
-		printf("artist = %s\n", tag);
+		//printf("artist = %s\n", tag);
 		tot = get_songs_by_field(&data, "TPE1", tag);
 	}
 	else if (! strcasecmp(val.playby, "genre"))
 	{
 		get_tag_from_song(cursong, tag, "TCON");
-		printf("genre = %s\n", tag);
+		//printf("genre = %s\n", tag);
 		tot = get_songs_by_field(&data, "TCON", tag);
 	}
 	send_song_data(data, tot, 'I');
@@ -1003,13 +1003,18 @@ void net_play()
 	buf_step();
 	char song[BUFF];
 	int len = get_string_from_buf(song);
+	//If no specific song is given play the current one
+	//otherwise play the specified song
 	if (len < 0)
 	{
 		buf_step();
-		next();
+		//next();
+		play_cursong();
 	}
 	else
+	{
 		play(song);
+	}
 	buf_shift();
 }
 void play_album_now()

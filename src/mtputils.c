@@ -22,6 +22,7 @@
 
 #include "myutils.h"
 #include "sqlite.h"
+#include "net_utils.h"
 
 static int num_devices;
 
@@ -39,6 +40,7 @@ static void clear_files(LIBMTP_mtpdevice_t*, uint32_t);
 static int del_file(LIBMTP_mtpdevice_t*, uint32_t);
 static int add_file(LIBMTP_mtpdevice_t*, uint32_t , char*, struct stat);
 static void* get_songs_for_phone(void*);
+static void send_string(char*);
 
 LIBMTP_raw_device_t* connect_to_phone()
 {
@@ -358,4 +360,7 @@ int phone_thread_init(char dist[], int thresh, int var, int time, char time_s[],
 	}
 	return 0;
 }
+void send_string(char *str)
+{
 
+}

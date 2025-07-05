@@ -26,6 +26,7 @@ int set_volume(int);
 //control functions
 int play(char*);
 void play_cursong(void);
+void play_song(void);
 int stop(void);
 int next(void);
 int back(void);

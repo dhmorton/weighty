@@ -72,7 +72,7 @@ int check_for_flac_image(const char *file)
 	ret = FLAC__metadata_get_picture(file, &pic, -1, NULL, NULL, -1, -1, -1, -1);
 	if (ret)
 	{
-		//printf("!!!FOUND a FLAC image\n");
+		printf("Found a FLAC image\n");
 		int len = pic->length;
 		FLAC__byte *image = pic->data.picture.data;
 		FILE *fp;

@@ -88,7 +88,7 @@ int send_weight_sticky_data(int weight, int sticky)
 	memcpy(pcom++, "\0", 1);
 	len += 2;
 	send_command(com, len);
-	print_data(com, len);
+	//print_data(com, len);
 	return 0;
 }
 int send_playing(char *song)
@@ -98,7 +98,7 @@ int send_playing(char *song)
 	com[0] = 'Y';
 	strncat(com, song, strlen(song) + 1);
 	send_command(com, strlen(song) + 2);
-	print_data(com, strlen(song) + 2);
+	//print_data(com, strlen(song) + 2);
 	return 0;
 }
 int send_song_data(song* data, int songs, char pref)//pref is the prefix that tells the client what to do with the song list

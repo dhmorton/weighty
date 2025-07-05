@@ -37,7 +37,6 @@ void set_cursong(char* song) {
 	{
 		cursong = malloc(strlen(song) + 1);
 		memcpy(cursong, song, strlen(song) + 1);
-		printf("new cursong = %s\n", cursong);
 		int a[2];
 		retrieve_by_song(song, a);
 		weight = a[0];

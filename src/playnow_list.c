@@ -136,7 +136,7 @@ int set_cursong_from_playnow()
 		rem->weight--;
 		set_song_weight(rem->name, rem->weight);
 	}
-	printf("songs on playnow = %d\n", songs_on_playnow_list);
+	//printf("songs on playnow = %d\n", songs_on_playnow_list);
 	set_cursong(rem->name);
 	if(cursong == NULL)
 		return 1;

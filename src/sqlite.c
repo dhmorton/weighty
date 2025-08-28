@@ -901,7 +901,6 @@ int get_multisong_albums(song **data)
 	}
 	sqlite3_clear_bindings(stmt);
 	sqlite3_finalize(stmt);
-	printf("%d albums\n", i);
 
 	return i;
 }
@@ -1220,6 +1219,7 @@ int get_songs_and_tags_by_field(song **data, char *field, char *item)
 	sqlite3_stmt *stmt;
 	char *pz_left;
 
+	printf("get songs and tags by field %s : %s\n", field, item);
 	//char *sql = "SELECT files.file, files.weight, files.sticky FROM files, tags WHERE tags.field = ? AND tags.tag = ? AND files.id = tags.id";
 	char *sql = "SELECT f.file, f.weight, f.sticky, f.id, t2.field, t2.tag\
 				FROM files f INNER JOIN tags t ON f.id = t.id\
@@ -1304,7 +1304,6 @@ int get_songs_and_tags_by_field(song **data, char *field, char *item)
 //gets a complete list of unique fields, passes on the identity of the requesting tree view in com_char
 int get_complete_field_list(char com_char)//FIXME - get rid of the sort and copy routine
 {
-	printf("get complete field list\n");
 	sqlite3_stmt *stmt;
 	char *pz_left;
 
@@ -1349,7 +1348,6 @@ int get_complete_field_list(char com_char)//FIXME - get rid of the sort and copy
 		free(s[j]);
 	}
 	sqlite3_finalize(stmt);
-	printf("num fields = %d\n", i);
 	send_command(com, len);
 	return i;
 }
@@ -1382,7 +1380,7 @@ int get_recent_albums(song **data, int sec)
 		return 2;
 	}
 	int i = 0;
-	while (SQLITE_DONE != sqlite3_step(stmt))
+	while (SQLITE_DONE != sqlite3_step(stmt) && i < 100)
 	{
 		const unsigned char* album = sqlite3_column_text(stmt, 2);
 		(*data)[i].file = malloc(strlen((char*)album) + 1);
@@ -1393,6 +1391,10 @@ int get_recent_albums(song **data, int sec)
 	}
 	sqlite3_clear_bindings(stmt);
 	sqlite3_finalize(stmt);
+	if(i >= 100)
+	{
+		printf("Large i in get_recent_albums(): sec = %d\n", sec);
+	}
 	return i;
 }
 int get_recent_artists(song **data, int sec)

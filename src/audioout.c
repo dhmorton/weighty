@@ -57,6 +57,11 @@ int play_file(const char *filename)
 		ao_initialize();
 		playing = 1;
 	}
+	if(filename == NULL)
+	{
+		printf("NULL FILENAME audioout.c:62\n");
+		return -1;
+	}
 	extension = check_file(filename);
 	void* (*play_func)(void*);
 	switch(extension) {
@@ -243,7 +248,6 @@ void* play_mp3(void* data_args)
 	format.channels = channels;
 	format.byte_format = AO_FMT_NATIVE;
 	format.matrix = 0;
-	printf("rate = %d\n", format.rate);
 	int count = 0;
 	while(count < 3) {
 		ao_dev = ao_open_live(ao_driver, &format, NULL);

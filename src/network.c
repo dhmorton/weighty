@@ -120,11 +120,10 @@ void weighty(int sock)
 					memset(&client_addr, 0, clilen);
 					new = accept(sock, (struct sockaddr *) &client_addr, &clilen);
 					if (new < 0)
-						printf("error accepting new connection...\n");
+						printf("error accepting new connection\n");
 					setnonblocking(&new);
 					FD_SET(new, &socks);
 					update_socks(new);
-					printf("%d Done\n", new);
 					update_gui();
 				}
 				else

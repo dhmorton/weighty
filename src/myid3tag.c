@@ -623,8 +623,6 @@ int check_for_mp3_image(const char *file)
 					len = &field->binary.length;
 					if (*len >= 4096)
 					{
-						printf("%s\n", file);
-						printf("\tFound image: size = %d\n",(int) *len);
 						bin = id3_field_getbinarydata(field, len);
 						if (*bin == 0)//empty tag
 							printf("empty tag\n");
@@ -632,7 +630,6 @@ int check_for_mp3_image(const char *file)
 							printf("can't open %s for writing\n", image_file);
 						else
 						{
-							printf("\tbin = %u\n",*bin);
 							fwrite(bin, 1, *len, fp);
 							fclose(fp);
 						}
